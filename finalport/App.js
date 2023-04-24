@@ -5,10 +5,9 @@ import { Button, CheckBox, Input } from "@rneui/themed"
 import FontAwesome from '@expo/vector-icons/FontAwesome'
 import { useEffect, useState } from 'react'
 import { NavigationContainer, StackActions } from "@react-navigation/native"
-import AsyncStorage from "@react-native-async-storage/async-storage"
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import AsyncStorage from "@react-native-async-storage/async-storage"
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { CheckBox } from '@rneui/base';
 
 const Tab = createBottomTabNavigator()
 
@@ -130,16 +129,42 @@ function TodoScreen({navigation, tasks, setTasks}) {
   await AsyncStorage.setItem('@tasks', JSON.stringify(newTasks))
   setInput("")
   }
-  let renderItem = ({item} => {
+  let renderItem = ({item}) => {
     return (
       <View style={styles.horizontal}>
-        <CheckBox
-        />
+      <CheckBox
+          textStyle={item.completed ? {
+            textDecorationLine: "line-through",
+            textDecorationStyle: "solid",
+          } :undefined}
+          title={item.description}
+          checked={item.completed}
+          onPress={() => updateTask(item)}
+      />
+      <Button title="Details" onPress={() => navigation.navigate("Details" , {item})}/>
       </View>
     )
-  })
+  }
+  return(
+    <View style={[styles.container]}>
+      <StatusBar style="auto" />
+        <FlatList data={tasks} renderItem={renderItem} />
+        <View style={[styles.horizontal]}>
+          <Input
+          onChangeText={setInput}
+          value={input}
+          placeholder="New task..."
+          ></Input><Button title="Add Task" onPress={addTask}/>
+        </View>
+    </View>
+  )
 }
 const styles = StyleSheet.create({
+  horizontal:{
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    padding: 10,
+  },
   container: {
     flex: 1,
     backgroundColor: '#fff',
