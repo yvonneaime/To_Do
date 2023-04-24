@@ -2,6 +2,7 @@ import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View } from 'react-native';
 import { FlatList } from 'react-native';
 import { Button, CheckBox, Input } from "@rneui/themed"
+import * as Font from 'expo-font'
 import FontAwesome from '@expo/vector-icons/FontAwesome'
 import { useEffect, useState } from 'react'
 import { NavigationContainer, StackActions } from "@react-navigation/native"
@@ -12,7 +13,7 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 const Tab = createBottomTabNavigator()
 
 async function cacheFonts(fonts) {
-  return fonts.map(async (font) => await FontAwesome.loadAsync(font))
+  return fonts.map(async (font) => await Font.loadAsync(font))
 }
 let newTasks = [
   {description: "Task 1", completed: true, key:1, relatedTasks: [2]},
@@ -58,7 +59,7 @@ function TodoHomeScreen() {
     }
     getValue()
   }, [])
-  return <StackNavigator initialRouteName="ToDo List">
+  return <Stack.Navigator initialRouteName="ToDo List">
     <Stack.Screen name="ToDo List">
       {(props) => (
         <TodoScreen {...props} tasks={tasks} setTasks={setTasks} />
@@ -69,7 +70,7 @@ function TodoHomeScreen() {
         <DetailsScreen {...props} setTasks={setTasks}  tasks={tasks}/>
       )}
     </Stack.Screen>
-  </StackNavigator>
+  </Stack.Navigator>
 }
 
 function DetailsScreen({navigation, route, setTasks, tasks,}) {
@@ -118,20 +119,21 @@ function TodoScreen({navigation, tasks, setTasks}) {
     })
   let newTasks = [
     ...tasks,
-    {
-      description: input,
-      completed: false,
-      key: maxKey + 1,
-    },
-  ] 
-  setTasks()
-  console.log()
-  await AsyncStorage.setItem('@tasks', JSON.stringify(newTasks))
-  setInput("")
+     {
+        description: input,
+        completed: false,
+        key: maxKey + 1,
+      },
+    ] 
+    setTasks(newTasks)
+    console.log(newTasks)
+    await AsyncStorage.setItem('@tasks', JSON.stringify(newTasks))
+    setInput("")
   }
   let renderItem = ({item}) => {
     return (
       <View style={styles.horizontal}>
+
       <CheckBox
           textStyle={item.completed ? {
             textDecorationLine: "line-through",
@@ -144,6 +146,7 @@ function TodoScreen({navigation, tasks, setTasks}) {
       <Button title="Details" onPress={() => navigation.navigate("Details" , {item})}/>
       </View>
     )
+
   }
   return(
     <View style={[styles.container]}>
