@@ -1,11 +1,14 @@
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View } from 'react-native';
+import { FlatList } from 'react-native';
+import { Button, CheckBox, Input } from "@rneui/themed"
 import FontAwesome from '@expo/vector-icons/FontAwesome'
 import { useEffect, useState } from 'react'
 import { NavigationContainer, StackActions } from "@react-navigation/native"
 import AsyncStorage from "@react-native-async-storage/async-storage"
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { CheckBox } from '@rneui/base';
 
 const Tab = createBottomTabNavigator()
 
@@ -98,6 +101,44 @@ function DetailsScreen({navigation, route, setTasks, tasks,}) {
   )
 }
 
+function TodoScreen({navigation, tasks, setTasks}) {
+    cacheFonts([FontAwesome.font])
+  let [input, setInput] = useState("")
+  let updateTask = async (task) => {
+    console.log(task)
+    task.completed = !task.completed
+    setTasks([...tasks])
+    await AsyncStorage.setItem('@tasks', JSON.stringify(tasks))
+  }
+  let addTask = async () => {
+    let maxKey = 0
+    tasks.forEach(task => {
+      if(task.key > maxKey) {
+        maxKey = task.key
+      }
+    })
+  let newTasks = [
+    ...tasks,
+    {
+      description: input,
+      completed: false,
+      key: maxKey + 1,
+    },
+  ] 
+  setTasks()
+  console.log()
+  await AsyncStorage.setItem('@tasks', JSON.stringify(newTasks))
+  setInput("")
+  }
+  let renderItem = ({item} => {
+    return (
+      <View style={styles.horizontal}>
+        <CheckBox
+        />
+      </View>
+    )
+  })
+}
 const styles = StyleSheet.create({
   container: {
     flex: 1,
