@@ -2,7 +2,7 @@ import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View } from 'react-native';
 import FontAwesome from '@expo/vector-icons/FontAwesome'
 import { useEffect, useState } from 'react'
-import { NavigationContainer } from "@react-navigation/native"
+import { NavigationContainer, StackActions } from "@react-navigation/native"
 import AsyncStorage from "@react-native-async-storage/async-storage"
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
@@ -56,14 +56,46 @@ function TodoHomeScreen() {
     }
     getValue()
   }, [])
-  return <StackNavigator>
-    <Stack.Screen name="To Do List">
+  return <StackNavigator initialRouteName="ToDo List">
+    <Stack.Screen name="ToDo List">
       {(props) => (
-        <TodoHomeScreen
+        <TodoScreen {...props} tasks={tasks} setTasks={setTasks} />
       )}
     </Stack.Screen>
-
+    <Stack.Screen name="Details">
+      {(props) => (
+        <DetailsScreen {...props} setTasks={setTasks}  tasks={tasks}/>
+      )}
+    </Stack.Screen>
   </StackNavigator>
+}
+
+function DetailsScreen({navigation, route, setTasks, tasks,}) {
+  let {description, completed, key, relatedTasks} = route.params.item
+  useEffect(() => { 
+    navigation.setOptions({
+      title: description === "" ? "No title" : description,
+    })
+  }, [navigation])
+  return (
+    <View style={{ flex:1, alignItems: "center", justifyContent: "center" }}>
+      <Text>Details Screen </Text>
+      <Text>{description}</Text> 
+      {
+        relatedTasks !== undefined && relatedTasks.length > 0 ? 
+        <>
+          <Text>Related Tasks:</Text>
+          {tasks.filter(task => relatedTasks.includes(task.key)).map(cTask => <Button
+          key={cTask.key} title={cTask.description}
+          onPress={() => {
+            navigation.dispatch(StackActions.push('Details', {item:cTask}));
+          }}
+          />)
+          }
+        </>
+      : undefined}
+    </View>
+  )
 }
 
 const styles = StyleSheet.create({
