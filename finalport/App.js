@@ -9,6 +9,7 @@ import { NavigationContainer, StackActions } from "@react-navigation/native"
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import AsyncStorage from "@react-native-async-storage/async-storage"
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import DatePickerComponent from './pickdate'
 
 const Tab = createBottomTabNavigator()
 
@@ -144,8 +145,10 @@ function TodoScreen({navigation, tasks, setTasks}) {
       <Button title="Details" onPress={() => navigation.navigate("Details" , {item})}/>
       </View>
     )
-
   }
+  const handleDateSelected = (selectedDate) => {
+    console.log('Selected date:', selectedDate);
+    };
   return(
     <View style={[styles.container]}>
       <StatusBar style="auto" />
@@ -156,6 +159,8 @@ function TodoScreen({navigation, tasks, setTasks}) {
           value={input}
           placeholder="New task..."
           ></Input><Button title="Add Task" onPress={addTask}/>
+           <Text>Select a date:</Text>
+            <DatePicker onDateSelected={handleDateSelected} />
         </View>
     </View>
   )
