@@ -37,7 +37,7 @@ export default function App() {
   )
 }
 function SettingsScreen() {
-  return <Text>Settings Screen</Text>
+  return <Text style={styles.settings}>Settings</Text>
 }
 
 function TodoHomeScreen() {
@@ -59,8 +59,8 @@ function TodoHomeScreen() {
     }
     getValue()
   }, [])
-  return <Stack.Navigator initialRouteName="ToDo List">
-    <Stack.Screen name="ToDo List">
+  return <Stack.Navigator initialRouteName="To Do List">
+    <Stack.Screen name="To Do List">
       {(props) => (
         <TodoScreen {...props} tasks={tasks} setTasks={setTasks} />
       )}
@@ -105,7 +105,6 @@ function TodoScreen({navigation, tasks, setTasks}) {
     cacheFonts([FontAwesome.font])
   let [input, setInput] = useState("")
   let updateTask = async (task) => {
-    console.log(task)
     task.completed = !task.completed
     setTasks([...tasks])
     await AsyncStorage.setItem('@tasks', JSON.stringify(tasks))
@@ -126,7 +125,6 @@ function TodoScreen({navigation, tasks, setTasks}) {
       },
     ] 
     setTasks(newTasks)
-    console.log(newTasks)
     await AsyncStorage.setItem('@tasks', JSON.stringify(newTasks))
     setInput("")
   }
@@ -179,4 +177,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#DDDDDD',
     padding: 10,
   },
+  settings: {
+    textAlign: 'center'
+  }
 });
