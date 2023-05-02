@@ -4,12 +4,13 @@ import { FlatList } from 'react-native';
 import { Button, CheckBox, Input } from "@rneui/themed"
 import * as Font from 'expo-font'
 import FontAwesome from '@expo/vector-icons/FontAwesome'
-import { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { NavigationContainer, StackActions } from "@react-navigation/native"
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import AsyncStorage from "@react-native-async-storage/async-storage"
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import DatePickerComponent from './pickdate'
+import Notes from "./notes";
 
 const Tab = createBottomTabNavigator()
 
@@ -32,13 +33,9 @@ export default function App() {
         component={TodoHomeScreen}
         options={{ headerShown: false }}
         />
-      <Tab.Screen name="Settings" component={SettingsScreen} />
       </Tab.Navigator>
     </NavigationContainer>
   )
-}
-function SettingsScreen() {
-  return <Text style={styles.settings}>Settings</Text>
 }
 
 function TodoHomeScreen() {
@@ -74,25 +71,51 @@ function TodoHomeScreen() {
   </Stack.Navigator>
 }
 
+function ShowCompletedStatus({completed}) {
+    if (completed){
+        return (
+            <Text>Task has been completed!</Text>
+        )
+    }
+    return (
+        <Text>Task has not been completed yet.</Text>
+    )
+}
+
 function DetailsScreen({navigation, route, setTasks, tasks,}) {
-  let {description, completed, key, relatedTasks} = route.params.item
-  useEffect(() => { 
+  let {description, notes, completionDay, completed, relatedTasks} = route.params.item
+  useEffect(() => {
     navigation.setOptions({
       title: description === "" ? "No title" : description,
     })
   }, [navigation])
   return (
     <View style={{ flex:1, alignItems: "center", justifyContent: "center" }}>
-      <Text>Details Screen </Text>
-      <Text>{description}</Text> 
+      <Text>Details</Text>
+      <br/>
+        <ShowCompletedStatus completed={completed}></ShowCompletedStatus>
+      <br/>
+      <br/>
+      <Text>{"To-Do Item:"}</Text>
+      <Text>{description}</Text>
+      <br/>
+      <br/>
+      <br/>
+        <Text>{"Completion Day:"}</Text>
+        <Text>{completionDay}</Text>
+        <br/>
+        <br/>
+        <br/>
+        <Text>{"Notes:"}</Text>
+      <Text>{notes}</Text>
       {
-        relatedTasks !== undefined && relatedTasks.length > 0 ? 
+        relatedTasks !== undefined && relatedTasks.length > 0 ?
         <>
           <Text>Related Tasks:</Text>
           {tasks.filter(task => relatedTasks.includes(task.key)).map(cTask => <Button
           key={cTask.key} title={cTask.description}
           onPress={() => {
-            navigation.dispatch(StackActions.push('Details', {item:cTask}));
+              navigation.dispatch(StackActions.push('Details', {item:cTask}));
           }}
           />)
           }
@@ -104,7 +127,9 @@ function DetailsScreen({navigation, route, setTasks, tasks,}) {
 
 function TodoScreen({navigation, tasks, setTasks}) {
     cacheFonts([FontAwesome.font])
-  let [input, setInput] = useState("")
+  let [input, setInput] = useState("");
+  let [completionDay, setCompletionDay] = useState(new Date());
+  let [note, setNote] = useState("");
   let updateTask = async (task) => {
     task.completed = !task.completed
     setTasks([...tasks])
@@ -121,10 +146,12 @@ function TodoScreen({navigation, tasks, setTasks}) {
     ...tasks,
      {
         description: input,
+        completionDay: transformDate(),
+        notes: note,
         completed: false,
         key: maxKey + 1,
       },
-    ] 
+    ]
     setTasks(newTasks)
     await AsyncStorage.setItem('@tasks', JSON.stringify(newTasks))
     setInput("")
@@ -142,28 +169,56 @@ function TodoScreen({navigation, tasks, setTasks}) {
           checked={item.completed}
           onPress={() => updateTask(item)}
       />
-      <Button title="Details" onPress={() => navigation.navigate("Details" , {item})}/>
+          <Button
+              title="Details"
+              onPress={() => navigation.navigate("Details", { item })}
+              style={{ padding: 10 }}
+          />
+          <Button
+              title="Delete"
+              onPress={() => deleteTask(item)}
+              style={{ padding: 10 }}
+          />
+
       </View>
     )
   }
-  const handleDateSelected = (selectedDate) => {
-    console.log('Selected date:', selectedDate);
+  function transformDate(){
+    return completionDay.toLocaleDateString('en-US', {
+      month: '2-digit',
+      day: '2-digit',
+      year: 'numeric'
+    });
+  }
+
+  const deleteTask = (incomingTask) => {
+        const updatedItems = tasks.filter((task) => task.description !== incomingTask.description);
+        setTasks(updatedItems);
     };
-  return(
-    <View style={[styles.container]}>
-      <StatusBar style="auto" />
+
+  return (
+      <View style={[styles.container]}>
+        <StatusBar style="auto" />
         <FlatList data={tasks} renderItem={renderItem} />
-        <View style={[styles.horizontal]}>
+        <View style={[styles.horizontal, { flexDirection: 'column' }]}>
           <Input
-          onChangeText={setInput}
-          value={input}
-          placeholder="New task..."
-          ></Input><Button title="Add Task" onPress={addTask}/>
-           <Text>Select a date:</Text>
-            <DatePicker onDateSelected={handleDateSelected} />
+              onChangeText={setInput}
+              value={input}
+              placeholder="New task..."
+          ></Input>
+          <Text>{"Completion"}</Text>
+          <View style={[styles.horizontal, { flexDirection: 'column' }]}>
+            <DatePickerComponent val={completionDay} setter={setCompletionDay} />
+          </View>
+          <Notes val={note} setter={setNote}></Notes>
+          <br/>
+          <Button title="Add Task" onPress={addTask} />
         </View>
-    </View>
-  )
+      </View>
+  );
+
+
+
 }
 const styles = StyleSheet.create({
   horizontal:{
@@ -184,5 +239,6 @@ const styles = StyleSheet.create({
   },
   settings: {
     textAlign: 'center'
-  }
+  },
+
 });

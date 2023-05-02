@@ -1,24 +1,21 @@
 import React, { useState } from 'react';
 import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
 
-const DatePickerComponent = ({ onDateSelected }) => {
-    const [startDate, setStartDate] = useState(new Date());
-  
+const DatePickerComponent = ({ val, setter, onDateSelected }) => {
     const handleChange = (date) => {
-      setStartDate(date);
-  
+        setter(date);
       if (onDateSelected) {
         onDateSelected(date);
       }
     };
-  
     return (
-      <DatePicker
-        selected={startDate}
-        onChange={handleChange}
-        dateFormat="yyyy/MM/dd"
-      />
+        <DatePicker
+            selected={val}
+            onChange={handleChange}
+            dateFormat="MM/dd/yyyy"
+        />
     );
-  };
-  
-  export default DatePickerComponent;
+
+};
+export default DatePickerComponent;
